@@ -174,9 +174,12 @@ with app.app_context():
             if active_course:
                 sample_session = AttendanceSession(
                     title="GenAI & Prompt Engineering - Lecture 01",
+                    course_code=active_course.code,
                     course_id=active_course.id,
-                    status="OPEN",
-                    created_by=1
+                    start_time=datetime.utcnow() - timedelta(minutes=15),
+                    end_time=datetime.utcnow() + timedelta(hours=2),
+                    is_active=True,
+                    created_by="admin"
                 )
                 db.session.add(sample_session)
                 db.session.flush()
@@ -189,7 +192,7 @@ with app.app_context():
                     face_match_score=0.92,
                     wifi_verified=True,
                     liveness_verified=True,
-                    verified_mac="00:1B:44:11:3A:B7"
+                    matched_mac="00:1B:44:11:3A:B7"
                 )
                 db.session.add(sample_log)
 
