@@ -32,7 +32,7 @@ window.fetch = function(url, options = {}) {
 <nav class="navbar navbar-expand-lg navbar-dark app-navbar py-2">
   <div class="container">
     <div class="d-flex align-items-center gap-2">
-      <a class="navbar-brand fw-bold d-flex align-items-center gap-2 me-0" href="{{ url_for('home') }}">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2 me-0" href="{% if current_user.is_authenticated %}{% if current_user.is_teacher %}{{ url_for('dashboard') }}{% else %}{{ url_for('student_portal') }}{% endif %}{% else %}{{ url_for('login') }}{% endif %}">
         <span class="fs-4">📸</span>
         <span>Attendify <span class="badge bg-warning text-dark fs-6" style="font-size: 0.65rem !important;">PRO</span></span>
       </a>
@@ -63,8 +63,6 @@ window.fetch = function(url, options = {}) {
     </button>
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}"><i class="bi bi-house"></i> Home</a></li>
-        
         {% if current_user.is_authenticated and not current_user.is_teacher %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('student_portal') }}"><i class="bi bi-person-check-fill"></i> My Attendance &amp; Check-In</a></li>
         {% endif %}

@@ -92,7 +92,7 @@ def teacher_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_teacher:
             flash("Access denied. Teacher/Admin role required.", "danger")
-            return redirect(url_for("home"))
+            return redirect(url_for("student_portal"))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -259,24 +259,11 @@ def logout():
 
 @app.route("/")
 def home():
-    total_students = Student.query.count()
-    today = date.today()
-    today_count = AttendanceLog.query.filter(
-        db.func.date(AttendanceLog.timestamp) == today.isoformat()
-    ).count()
-
-    active_sessions = AttendanceSession.query.filter_by(is_active=True).all()
-    open_sessions = [s for s in active_sessions if s.is_open()]
-
-    recent = AttendanceLog.query.order_by(AttendanceLog.timestamp.desc()).limit(6).all()
-
-    return render_template(
-        "index.html",
-        total_students=total_students,
-        today_count=today_count,
-        open_sessions=open_sessions,
-        recent=[r.to_dict() for r in recent],
-    )
+    if current_user.is_authenticated:
+        if current_user.is_teacher:
+            return redirect(url_for("dashboard"))
+        return redirect(url_for("student_portal"))
+    return redirect(url_for("login"))
 
 
 # --------------------------------------------------------------------
