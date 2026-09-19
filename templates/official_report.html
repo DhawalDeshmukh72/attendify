@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Official Academic Attendance Register{% endblock %}
+{% block content %}
+
+<!-- Print Controls (Hidden when printing) -->
+<div class="d-print-none row align-items-center justify-content-between mb-4">
+  <div class="col-md-7">
+    <h3 class="fw-bold text-dark mb-1">
+      <i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Official University Attendance Register
+    </h3>
+    <p class="text-muted small mb-0">Export semester attendance reports with defaulter highlights (<75%) and institutional audit stamps.</p>
+  </div>
+  <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
+    <button onclick="window.print()" class="btn btn-outline-dark btn-sm fw-bold">
+      <i class="bi bi-printer-fill me-1"></i> Print Institutional Sheet
+    </button>
+    <a href="{{ url_for('download_pdf_report', course_id=selected_course.id if selected_course else '') }}" class="btn btn-danger btn-sm fw-bold">
+      <i class="bi bi-file-pdf-fill me-1"></i> Download PDF Document
+    </a>
+  </div>
+</div>
+
+<!-- Course Filter Toolbar (Hidden when printing) -->
+<div class="d-print-none card p-3 shadow-sm border-0 mb-4 bg-light">
+  <form method="GET" action="{{ url_for('official_report') }}" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <label class="form-label small fw-bold mb-1">Filter Academic Course:</label>
+      <select name="course_id" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">-- All Registered Courses --</option>
+        {% for c in courses %}
+          <option value="{{ c.id }}" {% if selected_course and selected_course.id == c.id %}selected{% endif %}>
+            {{ c.code }} — {{ c.title }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-7 text-md-end">
+      <div class="d-inline-flex gap-3 text-xs pt-3">
+        <span>Total Students: <strong class="text-dark">{{ total_students }}</strong></span>
+        <span>Sessions Conducted: <strong class="text-dark">{{ total_lectures }}</strong></span>
+        <span>Defaulters (&lt;75%): <strong class="text-danger">{{ defaulters_count }}</strong></span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- OFFICIAL REPORT SHEET (Printable Paper Style) -->
+<div class="card p-5 shadow-sm border bg-white" id="printable-register" style="max-width: 960px; margin: 0 auto; font-family: 'Times New Roman', serif;">
+  
+  <!-- Institutional Header & Seal -->
+  <div class="text-center border-bottom pb-3 mb-4">
+    <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+      <div style="font-size: 2.5rem;">🏛️</div>
+      <div>
+        <h2 class="fw-bold mb-0 text-uppercase tracking-wider" style="color: #0b1329; font-size: 1.6rem; letter-spacing: 0.05em;">
+          UNIVERSITAS ATTENDIFY
+        </h2>
+        <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.82rem; letter-spacing: 0.08em;">
+          Faculty of Engineering &amp; Technology &bull; Department of Computer Science
+        </div>
+      </div>
+    </div>
+    <h5 class="text-decoration-underline fw-bold mt-2 mb-1" style="font-size: 1.1rem; color: #0b1329;">
+      OFFICIAL SEMESTER ATTENDANCE REGISTER &amp; AUDIT RECORD
+    </h5>
+    <p class="text-muted small mb-0" style="font-size: 0.75rem;">
+      Generated on: <strong>{{ generated_at }}</strong> &bull; Examination Board Compliance
+    </p>
+  </div>
+
+  <!-- Course & Session Meta Details -->
+  <div class="row g-2 mb-3 small" style="font-size: 0.85rem;">
+    <div class="col-6">
+      <div><strong>Course Code / Title:</strong> {{ selected_course.code ~ ' — ' ~ selected_course.title if selected_course else 'All Registered Subjects' }}</div>
+      <div><strong>Department:</strong> {{ selected_course.department if selected_course else 'Computer Science & Engineering' }}</div>
+    </div>
+    <div class="col-6 text-end">
+      <div><strong>Total Lectures Conducted:</strong> {{ total_lectures }}</div>
+      <div><strong>Minimum Required Threshold:</strong> <span class="badge bg-danger">75.0%</span></div>
+    </div>
+  </div>
+
+  <!-- Student Attendance Roster Table -->
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered table-sm align-middle mb-0" style="font-size: 0.82rem; border-color: #333;">
+      <thead style="background-color: #f1f5f9;">
+        <tr class="text-center text-uppercase" style="font-size: 0.75rem;">
+          <th style="width: 50px;">Sr.</th>
+          <th>Roll Number</th>
+          <th>Student Full Name</th>
+          <th>Lectures Attended</th>
+          <th>Total Sessions</th>
+          <th>Percentage</th>
+          <th>Audit Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in report_data %}
+        <tr class="{% if r.is_defaulter %}table-danger{% endif %}">
+          <td class="text-center">{{ loop.index }}</td>
+          <td class="font-monospace fw-bold text-center">{{ r.student.roll_no }}</td>
+          <td>
+            <strong>{{ r.student.name }}</strong>
+            {% if r.overrides_count > 0 %}
+              <span class="badge bg-warning text-dark font-sans ms-1" style="font-size: 0.65rem;">{{ r.overrides_count }} Override(s)</span>
+            {% endif %}
+          </td>
+          <td class="text-center fw-bold">{{ r.present_count }}</td>
+          <td class="text-center">{{ r.total_lectures }}</td>
+          <td class="text-center fw-bold {% if r.is_defaulter %}text-danger{% else %}text-success{% endif %}">
+            {{ r.attendance_rate }}%
+          </td>
+          <td class="text-center fw-bold">
+            {% if r.is_defaulter %}
+              <span class="text-danger">⚠️ DEFAULTER (&lt;75%)</span>
+            {% else %}
+              <span class="text-success">✅ ELIGIBLE</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Statistical Summary -->
+  <div class="p-2.5 border rounded bg-light mb-5 small" style="font-size: 0.78rem;">
+    <div class="row text-center">
+      <div class="col-4">Total Students Enrolled: <strong>{{ total_students }}</strong></div>
+      <div class="col-4">Eligible for Exams: <strong class="text-success">{{ total_students - defaulters_count }}</strong></div>
+      <div class="col-4">Exam Defaulters: <strong class="text-danger">{{ defaulters_count }}</strong></div>
+    </div>
+  </div>
+
+  <!-- Official Signatures Block -->
+  <div class="row pt-4 mt-4 text-center" style="font-size: 0.82rem;">
+    <div class="col-4">
+      <div class="border-top border-dark pt-1 mx-3">
+        <strong>Course Instructor</strong><br>
+        <span class="text-muted" style="font-size: 0.75rem;">Signature &amp; Date</span>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="border-top border-dark pt-1 mx-3">
+        <strong>Head of Department</strong><br>
+        <span class="text-muted" style="font-size: 0.75rem;">Department Seal</span>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="border-top border-dark pt-1 mx-3">
+        <strong>Dean of Academic Affairs</strong><br>
+        <span class="text-muted" style="font-size: 0.75rem;">Controller of Examinations</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+  .app-navbar, footer, .d-print-none {
+    display: none !important;
+  }
+  #printable-register {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+}
+</style>
+
+{% endblock %}

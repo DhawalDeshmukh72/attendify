@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Academic Portal{% endblock %}
+{% block content %}
+
+<div class="mb-4">
+  <h2 class="fw-bold text-dark">Attendify Academic Portal</h2>
+  <p class="text-muted">Biometric Face Recognition with Wi-Fi AP Verification</p>
+</div>
+
+<!-- Key Metrics Row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card stat-card p-4">
+      <div class="text-muted small">Registered Students</div>
+      <div class="value">{{ total_students }}</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card stat-card p-4">
+      <div class="text-muted small">Attendance Records Today</div>
+      <div class="value">{{ today_count }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Role-Specific Action Cards -->
+<div class="row g-3 mb-4">
+  {% if current_user.is_authenticated and not current_user.is_teacher %}
+  <!-- Student Quick Action -->
+  <div class="col-12">
+    <a href="{{ url_for('student_portal') }}" class="card p-4 text-decoration-none text-white h-100 d-block shadow-sm" style="background: linear-gradient(135deg, #0b1329 0%, #152347 100%);">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="fw-bold mb-1"><i class="bi bi-camera-fill me-2 text-warning"></i>Go to Student Attendance Check-In</h4>
+          <p class="opacity-75 mb-0 small">Connect to classroom Wi-Fi and verify your live presence for active lectures.</p>
+        </div>
+        <span class="btn btn-warning btn-sm fw-bold px-3 py-2">Open Portal &rarr;</span>
+      </div>
+    </a>
+  </div>
+  {% elif current_user.is_authenticated and current_user.is_teacher %}
+  <!-- Teacher Actions -->
+  <div class="col-md-6">
+    <a href="{{ url_for('register') }}" class="card p-4 text-decoration-none text-dark h-100 d-block shadow-sm">
+      <h5 class="fw-bold mb-1 text-primary"><i class="bi bi-person-plus me-2"></i>Register New Student</h5>
+      <p class="text-muted mb-0 small">Enroll a student with 3-angle facial reference embeddings.</p>
+    </a>
+  </div>
+  <div class="col-md-6">
+    <a href="{{ url_for('manage_sessions') }}" class="card p-4 text-decoration-none text-dark h-100 d-block shadow-sm">
+      <h5 class="fw-bold mb-1 text-primary"><i class="bi bi-clock-history me-2"></i>Lecture Sessions</h5>
+      <p class="text-muted mb-0 small">Open or manage active attendance time windows.</p>
+    </a>
+  </div>
+  {% else %}
+  <!-- Guest / Unauthenticated -->
+  <div class="col-12">
+    <div class="card p-4 text-center shadow-sm">
+      <h5 class="fw-bold mb-2">Welcome to Attendify Portal</h5>
+      <p class="text-muted small mb-3">Please sign in to access your student attendance portal or faculty dashboard.</p>
+      <div>
+        <a href="{{ url_for('login') }}" class="btn btn-primary px-4 py-2 fw-bold">Sign In to Portal</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Recent Activity Log -->
+<div class="card p-4 shadow-sm">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history text-primary me-2"></i>Recent Attendance Activity</h6>
+    {% if current_user.is_authenticated and current_user.is_teacher %}
+    <a href="{{ url_for('dashboard') }}" class="small text-decoration-none">View Full Audit Log &rarr;</a>
+    {% endif %}
+  </div>
+
+  {% if recent %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light small">
+        <tr>
+          <th>Time</th>
+          <th>Student</th>
+          <th>Session</th>
+          <th>Match Confidence</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recent %}
+        <tr>
+          <td class="text-muted small">{{ r.timestamp }}</td>
+          <td><strong>{{ r.student_name }}</strong> <span class="text-muted small">({{ r.roll_no }})</span></td>
+          <td><span class="badge bg-light text-dark border">{{ r.session_title }}</span></td>
+          <td><span class="badge bg-light text-dark border font-monospace">{{ r.face_match_score }}</span></td>
+          <td>
+            <span class="status-pill {{ 'status-present' if r.status == 'PRESENT' else 'status-flagged' }}">
+              {{ r.status }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted small mb-0 text-center py-3">No attendance records logged today.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

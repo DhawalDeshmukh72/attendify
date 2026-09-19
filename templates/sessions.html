@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Attendance Sessions{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-0">Attendance Windows / Sessions</h2>
+    <p class="text-muted small mb-0">Open time-limited check-in windows for lectures and classes.</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3">🕒 Open New Session Window</h5>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Session Title</label>
+          <input type="text" name="title" class="form-control" placeholder="e.g. CS101 Lecture #14" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Course / Class Code</label>
+          <input type="text" name="course_code" class="form-control" placeholder="e.g. CS101" value="CS101" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Window Duration (Minutes)</label>
+          <select name="duration" class="form-select">
+            <option value="5">5 Minutes (Quick check)</option>
+            <option value="15" selected>15 Minutes (Standard class)</option>
+            <option value="30">30 Minutes</option>
+            <option value="60">60 Minutes (Full hour)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">🚀 Open Attendance Window</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3">Recent Class Windows</h5>
+      {% if sessions %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Status</th>
+              <th>Session &amp; Course</th>
+              <th>Time Window</th>
+              <th>Created By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sessions %}
+            <tr>
+              <td>
+                {% if s.is_open() %}
+                <span class="badge badge-session-open px-2 py-1"><i class="bi bi-broadcast"></i> OPEN NOW</span>
+                {% elif not s.is_active %}
+                <span class="badge bg-secondary px-2 py-1">Closed (Manual)</span>
+                {% else %}
+                <span class="badge bg-light text-muted border px-2 py-1">Expired</span>
+                {% endif %}
+              </td>
+              <td>
+                <strong>{{ s.title }}</strong><br>
+                <small class="text-muted">{{ s.course_code }}</small>
+              </td>
+              <td class="small">{{ s.start_time }} &rarr; {{ s.end_time }}</td>
+              <td class="small text-muted">{{ s.created_by or "admin" }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('toggle_session', session_id=s.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  {% if s.is_active %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Close Window</button>
+                  {% else %}
+                  <button type="submit" class="btn btn-sm btn-outline-success">Re-open Window</button>
+                  {% endif %}
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-muted text-center py-4">No active attendance sessions created yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

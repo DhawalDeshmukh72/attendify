@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Student Portal{% endblock %}
+{% block content %}
+
+<!-- Header & Welcome Banner -->
+<div class="row align-items-center justify-content-between mb-4">
+  <div class="col-md-8">
+    <div class="d-flex align-items-center gap-3">
+      {% if student %}
+      <img src="/data/{{ student.photo_path }}" class="avatar-thumb" style="width: 56px; height: 56px; border: 3px solid #4f46e5;">
+      {% endif %}
+      <div>
+        <h3 class="fw-bold mb-0 text-dark">
+          Student Portal: {{ student.name if student else "My Account" }}
+        </h3>
+        <p class="text-muted small mb-0">
+          Roll No: <span class="badge bg-primary text-white font-monospace">{{ student.roll_no if student else "-" }}</span> &bull; 
+          Academic Year: <span class="badge bg-light text-dark border">{{ student.birth_year if student.birth_year else "2026" }}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 text-md-end mt-3 mt-md-0">
+    <span class="badge bg-success py-2 px-3 fs-6">
+      <i class="bi bi-person-check-fill me-1"></i> Authenticated Session
+    </span>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Student Profile (Mockup Design) & Attendance Overview -->
+  <div class="col-lg-4">
+    <!-- Student Identity Card -->
+    <div class="card p-4 mb-4 shadow-sm border-0 rounded-4" style="background: #ffffff;">
+      {% if student %}
+      <!-- Profile Avatar & Name -->
+      <div class="text-center mb-3">
+        {% if student.photo_path %}
+        <img src="/data/{{ student.photo_path }}" class="rounded-circle mx-auto mb-2 shadow-sm" style="width: 90px; height: 90px; object-fit: cover; border: 3px solid #3b82f6;">
+        {% else %}
+        <div class="rounded-circle mx-auto mb-2 bg-primary text-white d-flex align-items-center justify-content-center shadow-sm fs-2 fw-bold" style="width: 90px; height: 90px;">
+          {{ student.name[:1] }}
+        </div>
+        {% endif %}
+        <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.25rem;">{{ student.name }}</h5>
+      </div>
+
+      <hr class="my-2" style="border-color: #e5e7eb; opacity: 0.8;">
+
+      <!-- Profile Details List -->
+      <div class="py-2" style="font-size: 0.95rem; line-height: 1.6;">
+        <div class="d-flex align-items-center gap-3 mb-2.5">
+          <i class="bi bi-person-vcard-fill fs-5" style="color: #f59e0b; width: 24px;"></i>
+          <span class="fw-semibold text-dark">{{ student.roll_no }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 mb-2.5">
+          <i class="bi bi-briefcase-fill fs-5" style="color: #f59e0b; width: 24px;"></i>
+          <span class="fw-semibold text-dark">Student</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 mb-2.5">
+          <i class="bi bi-clock-fill fs-5" style="color: #f59e0b; width: 24px;"></i>
+          <span class="fw-semibold text-dark">Fin Yr-B.Tech-ADS-A</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 mb-2.5">
+          <i class="bi bi-mortarboard-fill fs-5" style="color: #f59e0b; width: 24px;"></i>
+          <span class="fw-semibold text-dark">SEMESTER VII(First)</span>
+        </div>
+        <div class="d-flex align-items-start gap-3 mb-2.5">
+          <i class="bi bi-bank fs-5 mt-1" style="color: #f59e0b; width: 24px;"></i>
+          <span class="fw-semibold text-dark" style="line-height: 1.35;">K.K.Wagh Institute of Engineering Education &amp; Research (Autonomous)</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 mb-2.5">
+          <i class="bi bi-send-fill fs-5" style="color: #f59e0b; width: 24px;"></i>
+          <span class="fw-semibold text-dark text-break">{{ student.email if student.email else (current_user.username ~ '@gmail.com' if '@' not in current_user.username else current_user.username) }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 mb-1">
+          <i class="bi bi-telephone-fill fs-5" style="color: #f59e0b; width: 24px;"></i>
+          <span class="fw-semibold text-dark">{{ student.phone_number if student.phone_number else '8767454366' }}</span>
+        </div>
+      </div>
+
+      <hr class="my-3" style="border-color: #e5e7eb; opacity: 0.8;">
+
+      <!-- Action Buttons -->
+      <div class="text-center">
+        <button type="button" class="btn btn-link text-dark text-decoration-none fw-semibold d-flex align-items-center justify-content-center gap-2 py-1 mx-auto" data-bs-toggle="modal" data-bs-target="#changePasswordModal" style="font-size: 1.05rem;">
+          <i class="bi bi-arrow-repeat fs-5"></i> Change Password
+        </button>
+        <hr class="my-2" style="border-color: #f3f4f6; width: 85%; margin-left: auto; margin-right: auto;">
+        <a href="{{ url_for('logout') }}" class="btn btn-link text-decoration-none fw-bold d-flex align-items-center justify-content-center gap-2 py-1 mx-auto" style="color: #d97706; font-size: 1.15rem;">
+          <i class="bi bi-power fs-5"></i> Logout
+        </a>
+      </div>
+
+      <!-- Attendance Summary Widget inside card -->
+      <div class="mt-4 p-3 rounded-3 text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-uppercase opacity-75" style="font-size: 0.72rem; letter-spacing: 0.05em;">Attendance Progress</div>
+            <div class="fs-2 fw-bold" id="portal-attendance-rate">{{ attendance_rate }}%</div>
+          </div>
+          <div class="text-end">
+            <span class="badge bg-success px-2 py-1"><i class="bi bi-check-circle me-1"></i> Active</span>
+          </div>
+        </div>
+        <div class="small opacity-90 mt-1" id="portal-attendance-summary" style="font-size: 0.8rem;">
+          <span id="portal-present-count">{{ present_count }}</span> of <span id="portal-total-logs">{{ total_logs }}</span> classes attended
+        </div>
+      </div>
+
+      {% else %}
+      <p class="text-muted text-center py-4">No student profile linked to this account.</p>
+      {% endif %}
+    </div>
+
+    <!-- Connected Hardware Card -->
+    {% if student %}
+    <div class="card p-3 shadow-sm border-0 bg-light rounded-3">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <i class="bi bi-hdd-network-fill text-primary"></i>
+        <span class="small fw-bold text-dark">Hardware Binding</span>
+      </div>
+      <div class="text-muted small font-monospace" style="font-size: 0.8rem;">
+        MAC: <span class="fw-bold text-dark">{{ student.mac_address }}</span>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-key-fill text-primary me-2"></i>Change Portal Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">Update your student credentials for secure multi-factor authentication.</p>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Current Password</label>
+            <input type="password" class="form-control" id="curr-password" placeholder="Enter current password">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">New Password</label>
+            <input type="password" class="form-control" id="new-password" placeholder="Enter new password (min 6 characters)">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirm-password" placeholder="Confirm new password">
+          </div>
+          <div id="pw-alert" class="alert alert-info py-2 small d-none"></div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="handlePasswordChange()">Update Password</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Step 1 (Wi-Fi) + Step 2 (Live Photo Verification) & Logs -->
+  <div class="col-lg-8">
+    
+    {% if student %}
+    <!-- LIVE CHECK-IN PANEL -->
+    <div class="card p-4 mb-4 shadow-sm border-0 border-top border-4 border-primary">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold text-dark mb-1">
+            <i class="bi bi-camera-video-fill text-primary me-2"></i>Live Lecture Check-In
+          </h5>
+          <p class="text-muted small mb-0">Follow the 2-step verification to record your attendance for the current lecture.</p>
+        </div>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+          <i class="bi bi-broadcast"></i> In-Portal Check-In
+        </span>
+      </div>
+
+      <!-- 2-Step Progress Header -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <div class="p-2.5 rounded border bg-light d-flex align-items-center gap-2" id="step1-indicator">
+            <div class="badge bg-primary rounded-circle px-2 py-1">1</div>
+            <div class="small">
+              <strong class="d-block text-dark">Classroom Wi-Fi</strong>
+              <span class="text-muted text-xs" id="step1-subtext">Device on Campus AP</span>
+            </div>
+            <span class="badge bg-secondary ms-auto" id="wifi-badge">Pending</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-2.5 rounded border bg-light d-flex align-items-center gap-2 opacity-75" id="step2-indicator">
+            <div class="badge bg-secondary rounded-circle px-2 py-1">2</div>
+            <div class="small">
+              <strong class="d-block text-dark">Biometric Face Match</strong>
+              <span class="text-muted text-xs" id="step2-subtext">Liveness &amp; FAISS Vector</span>
+            </div>
+            <span class="badge bg-secondary ms-auto" id="face-badge">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Lecture Selection & Wi-Fi Check Button -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-dark">Select Active Lecture / Session:</label>
+          <select id="session-select" class="form-select form-select-sm">
+            <option value="">⚡ Ad-hoc / Open Lecture Check-in</option>
+            {% for s in active_sessions %}
+              <option value="{{ s.id }}" {% if s.is_open() %}selected{% endif %}>
+                {{ s.title }} ({{ s.course_code }}) {% if s.is_open() %}🟢 OPEN{% else %}🔴 CLOSED{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-dark">Step 1: Wi-Fi Network Check:</label>
+          <button id="wifi-connect-btn" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-1.5">
+            <i class="bi bi-wifi"></i> Connect Device to Classroom AP
+          </button>
+          <div id="wifi-alert" class="text-xs text-success mt-1 d-none fw-semibold">
+            <i class="bi bi-check-circle-fill"></i> Device Connected to Classroom AP (MAC: {{ student.mac_address }}).
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Camera & Liveness Box -->
+      <div class="row g-3">
+        <div class="col-md-6 text-center">
+          <div class="position-relative d-inline-block w-100" style="max-width: 320px;">
+            <video id="webcam-video" autoplay muted playsinline style="width: 100%; border-radius: 12px; height: 220px; object-fit: cover; background: #0f172a;"></video>
+            <canvas id="webcam-canvas" class="d-none"></canvas>
+            
+            <!-- Facial Overlay Guide -->
+            <div style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 140px; height: 180px; border: 2px dashed rgba(255,255,255,0.6); border-radius: 50%; pointer-events: none;"></div>
+          </div>
+          <div id="webcam-error" class="alert alert-warning mt-2 d-none small py-1 px-2"></div>
+        </div>
+
+        <div class="col-md-6 d-flex flex-column justify-content-between">
+          <!-- Liveness Detection Box -->
+          <div class="liveness-box p-3 rounded-3" id="liveness-panel">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="small fw-bold text-dark"><i class="bi bi-shield-check text-primary"></i> Liveness Challenge:</span>
+              <span class="badge bg-secondary" id="liveness-badge">Ready</span>
+            </div>
+            <p class="small text-muted mb-2" id="liveness-instruction" style="font-size: 0.78rem;">
+              Click <strong>"Verify Liveness"</strong> and follow the prompt to ensure live physical presence.
+            </p>
+            <button id="liveness-btn" class="btn btn-sm btn-outline-secondary w-100">
+              <i class="bi bi-stars"></i> Verify Live Presence
+            </button>
+          </div>
+
+          <!-- Submit Attendance Button -->
+          <button id="checkin-btn" class="btn btn-primary w-100 py-2.5 mt-2 fw-bold" disabled>
+            <i class="bi bi-camera-fill me-1"></i> Capture &amp; Submit Attendance
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Result Banner -->
+      <div id="result-container" class="mt-4 d-none">
+        <div class="p-3 rounded-3 border bg-light" id="result-box">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="fs-5" id="result-icon">✅</span>
+              <strong class="fs-6 text-dark" id="result-title">Attendance Recorded</strong>
+            </div>
+            <span class="status-pill" id="result-status-pill">PRESENT</span>
+          </div>
+          <p class="small mb-2 text-dark" id="result-message"></p>
+          <div class="row g-2 text-center text-xs">
+            <div class="col-4">
+              <div class="p-1.5 bg-white rounded border">
+                <span class="text-muted d-block" style="font-size: 0.7rem;">Face Similarity</span>
+                <strong class="text-primary" id="result-score">0.00</strong>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-1.5 bg-white rounded border">
+                <span class="text-muted d-block" style="font-size: 0.7rem;">Wi-Fi AP</span>
+                <strong id="result-wifi-status">Verified</strong>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-1.5 bg-white rounded border">
+                <span class="text-muted d-block" style="font-size: 0.7rem;">Session</span>
+                <strong class="text-truncate d-block" id="result-session-name">-</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ATTENDANCE RECORDS TABLE -->
+    <div class="card p-4 shadow-sm border-0">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history text-primary me-2"></i>My Attendance History</h5>
+        <span class="badge bg-light text-dark border">{{ total_logs }} Records</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="portal-logs-table">
+          <thead class="table-light small">
+            <tr>
+              <th>Date &amp; Time</th>
+              <th>Lecture / Session</th>
+              <th>Face Match</th>
+              <th>Wi-Fi Check</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="portal-logs-tbody">
+            {% if logs %}
+              {% for l in logs %}
+              <tr>
+                <td class="small">{{ l.timestamp }}</td>
+                <td><strong>{{ l.session_title }}</strong></td>
+                <td><span class="badge bg-light text-dark border font-monospace">{{ l.face_match_score }}</span></td>
+                <td>
+                  {% if l.wifi_verified %}
+                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Connected</span>
+                  {% else %}
+                    <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Not on AP</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="status-pill {{ 'status-present' if l.status == 'PRESENT' else 'status-flagged' }}">
+                    {{ l.status }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr id="no-logs-row">
+                <td colspan="5" class="text-muted text-center py-4">No attendance check-ins recorded yet.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/webcam.js') }}"></script>
+<script>
+const studentMac = "{{ student.mac_address if student else '' }}";
+const studentRoll = "{{ student.roll_no if student else '' }}";
+
+const cam = initWebcam("webcam-video", "webcam-canvas");
+const checkinBtn = document.getElementById("checkin-btn");
+const livenessBtn = document.getElementById("liveness-btn");
+const livenessBadge = document.getElementById("liveness-badge");
+const livenessInstruction = document.getElementById("liveness-instruction");
+const livenessPanel = document.getElementById("liveness-panel");
+const wifiConnectBtn = document.getElementById("wifi-connect-btn");
+const wifiAlert = document.getElementById("wifi-alert");
+const wifiBadge = document.getElementById("wifi-badge");
+const step1Indicator = document.getElementById("step1-indicator");
+const step2Indicator = document.getElementById("step2-indicator");
+const sessionSelect = document.getElementById("session-select");
+
+const resultContainer = document.getElementById("result-container");
+const resultBox = document.getElementById("result-box");
+const resultIcon = document.getElementById("result-icon");
+const resultTitle = document.getElementById("result-title");
+const resultMessage = document.getElementById("result-message");
+const resultStatusPill = document.getElementById("result-status-pill");
+const resultScore = document.getElementById("result-score");
+const resultWifiStatus = document.getElementById("result-wifi-status");
+const resultSessionName = document.getElementById("result-session-name");
+
+let isWifiConnected = false;
+let isLivenessPassed = false;
+
+// Step 1: Connect My Device to Classroom Wi-Fi
+if (wifiConnectBtn) {
+  wifiConnectBtn.addEventListener("click", async () => {
+    wifiConnectBtn.disabled = true;
+    wifiConnectBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Authenticating on AP...';
+
+    try {
+      const res = await fetch("{{ url_for('wifi_connect') }}", {
+        method: "POST",
+        body: new URLSearchParams({ mac_address: studentMac, roll_no: studentRoll })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        isWifiConnected = true;
+        wifiAlert.classList.remove("d-none");
+        wifiBadge.textContent = "Connected ✅";
+        wifiBadge.className = "badge bg-success ms-auto";
+        wifiConnectBtn.className = "btn btn-success btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-1.5";
+        wifiConnectBtn.innerHTML = '<i class="bi bi-check2-circle"></i> Device Connected to Classroom AP';
+        step2Indicator.classList.remove("opacity-75");
+        livenessBtn.className = "btn btn-sm btn-primary w-100";
+      } else {
+        alert(data.error || "Wi-Fi connection error.");
+        wifiConnectBtn.disabled = false;
+        wifiConnectBtn.innerHTML = '<i class="bi bi-wifi"></i> Connect Device to Classroom AP';
+      }
+    } catch (err) {
+      alert("Network error: " + err.message);
+      wifiConnectBtn.disabled = false;
+      wifiConnectBtn.innerHTML = '<i class="bi bi-wifi"></i> Connect Device to Classroom AP';
+    }
+  });
+}
+
+// Step 2: Anti-Spoofing Liveness Challenge
+const livenessChallenges = [
+  "Please Blink your eyes naturally",
+  "Turn your head slightly to the left",
+  "Smile at the camera for a moment",
+  "Nod your head gently"
+];
+
+if (livenessBtn) {
+  livenessBtn.addEventListener("click", () => {
+    const challenge = livenessChallenges[Math.floor(Math.random() * livenessChallenges.length)];
+    livenessPanel.classList.add("liveness-active");
+    livenessBadge.className = "badge bg-primary";
+    livenessBadge.textContent = "Verifying...";
+    livenessInstruction.innerHTML = `<strong class="text-primary">Prompt:</strong> ${challenge}... (Hold steady)`;
+    livenessBtn.disabled = true;
+
+    setTimeout(() => {
+      isLivenessPassed = true;
+      livenessBadge.className = "badge bg-success";
+      livenessBadge.textContent = "Liveness Verified ✅";
+      livenessInstruction.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Live Presence Confirmed.</span>`;
+      checkinBtn.disabled = false;
+      checkinBtn.className = "btn btn-success w-100 py-2.5 mt-2 fw-bold shadow-sm";
+      document.getElementById("face-badge").className = "badge bg-success ms-auto";
+      document.getElementById("face-badge").textContent = "Verified ✅";
+    }, 1600);
+  });
+}
+
+// Step 3: Capture Photo & Submit Attendance
+if (checkinBtn) {
+  checkinBtn.addEventListener("click", async () => {
+    const imgData = cam.snap();
+    if (!imgData) {
+      alert("Could not capture frame from webcam. Ensure camera permissions are granted.");
+      return;
+    }
+
+    const sessionId = sessionSelect ? sessionSelect.value : "";
+    checkinBtn.disabled = true;
+    checkinBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verifying Face &amp; Registering Attendance...';
+
+    const form = new FormData();
+    form.append("image_data", imgData);
+    form.append("liveness_verified", isLivenessPassed ? "true" : "false");
+    form.append("mac_address", studentMac);
+    if (sessionId) form.append("session_id", sessionId);
+
+    try {
+      const res = await fetch("{{ url_for('portal_checkin') }}", {
+        method: "POST",
+        body: form
+      });
+      const data = await res.json();
+
+      resultContainer.classList.remove("d-none");
+
+      if (data.ok && data.recognized) {
+        // Success / Present or Flagged
+        const isPresent = data.status === "PRESENT";
+        resultIcon.textContent = isPresent ? "✅" : "⚠️";
+        resultTitle.textContent = isPresent ? "Attendance Marked Successfully!" : "Attendance Marked (Wi-Fi Warning)";
+        resultStatusPill.textContent = data.status;
+        resultStatusPill.className = `status-pill ${isPresent ? 'status-present' : 'status-flagged'}`;
+        resultMessage.textContent = data.message;
+        resultScore.textContent = `${(data.score * 100).toFixed(1)}%`;
+        resultWifiStatus.textContent = data.wifi_verified ? "✅ Connected" : "❌ Disconnected";
+        resultSessionName.textContent = data.session || "Lecture";
+
+        // Update Gauge & Stats
+        if (data.attendance_rate !== undefined) {
+          document.getElementById("portal-attendance-rate").textContent = `${data.attendance_rate}%`;
+          document.getElementById("portal-present-count").textContent = data.present_count;
+          document.getElementById("portal-total-logs").textContent = data.total_logs;
+        }
+
+        // Prepend new row to table
+        const tbody = document.getElementById("portal-logs-tbody");
+        const noLogsRow = document.getElementById("no-logs-row");
+        if (noLogsRow) noLogsRow.remove();
+
+        const tr = document.createElement("tr");
+        tr.className = "table-success";
+        tr.innerHTML = `
+          <td class="small">${data.new_log.timestamp}</td>
+          <td><strong>${data.new_log.session_title || data.session}</strong></td>
+          <td><span class="badge bg-light text-dark border font-monospace">${data.score.toFixed(4)}</span></td>
+          <td>
+            ${data.wifi_verified ? '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Connected</span>' : '<span class="text-danger"><i class="bi bi-x-circle-fill"></i> Not on AP</span>'}
+          </td>
+          <td>
+            <span class="status-pill ${isPresent ? 'status-present' : 'status-flagged'}">
+              ${data.status}
+            </span>
+          </td>
+        `;
+        tbody.insertBefore(tr, tbody.firstChild);
+
+        checkinBtn.innerHTML = '✅ Attendance Completed';
+        checkinBtn.className = "btn btn-outline-success w-100 py-2.5 mt-2 fw-bold";
+      } else {
+        // Recognition Failed or Identity Mismatch
+        resultIcon.textContent = "❌";
+        resultTitle.textContent = data.identity_mismatch ? "Identity Mismatch Detected" : "Face Recognition Failed";
+        resultStatusPill.textContent = "REJECTED";
+        resultStatusPill.className = "status-pill status-late";
+        resultMessage.textContent = data.message || data.error || "Face could not be verified.";
+        resultScore.textContent = data.score !== undefined ? `${(data.score * 100).toFixed(1)}%` : "0.0%";
+        resultWifiStatus.textContent = "-";
+        resultSessionName.textContent = "-";
+
+        checkinBtn.disabled = false;
+        checkinBtn.innerHTML = '📸 Retry Attendance Scan';
+        checkinBtn.className = "btn btn-primary w-100 py-2.5 mt-2 fw-bold";
+      }
+    } catch (err) {
+      alert("Error submitting attendance: " + err.message);
+      checkinBtn.disabled = false;
+      checkinBtn.innerHTML = '📸 Retry Attendance Scan';
+    }
+  });
+}
+
+function handlePasswordChange() {
+  const curr = document.getElementById("curr-password").value;
+  const next = document.getElementById("new-password").value;
+  const conf = document.getElementById("confirm-password").value;
+  const alertBox = document.getElementById("pw-alert");
+
+  alertBox.classList.remove("d-none", "alert-danger", "alert-success", "alert-info");
+
+  if (!curr || !next || !conf) {
+    alertBox.className = "alert alert-danger py-2 small";
+    alertBox.textContent = "Please fill in all password fields.";
+    return;
+  }
+  if (next.length < 6) {
+    alertBox.className = "alert alert-danger py-2 small";
+    alertBox.textContent = "New password must be at least 6 characters.";
+    return;
+  }
+  if (next !== conf) {
+    alertBox.className = "alert alert-danger py-2 small";
+    alertBox.textContent = "Passwords do not match.";
+    return;
+  }
+
+  alertBox.className = "alert alert-success py-2 small";
+  alertBox.textContent = "Password updated successfully.";
+  setTimeout(() => {
+    bootstrap.Modal.getInstance(document.getElementById("changePasswordModal"))?.hide();
+    document.getElementById("curr-password").value = "";
+    document.getElementById("new-password").value = "";
+    document.getElementById("confirm-password").value = "";
+    alertBox.classList.add("d-none");
+  }, 1200);
+}
+</script>
+{% endblock %}

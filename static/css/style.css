@@ -1,0 +1,125 @@
+:root {
+  --brand: #4f46e5;
+  --brand-dark: #3730a3;
+  --brand-light: #e0e7ff;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+}
+
+body {
+  background: #f8fafc;
+  color: #1e293b;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.app-navbar {
+  background: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #6366f1 100%);
+  box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.25);
+}
+
+.stat-card {
+  border: none;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card .value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+.card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 8px 18px;
+}
+.btn-primary:hover {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+}
+
+#webcam-video, #webcam-canvas {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 14px;
+  background: #0f172a;
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.status-present { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.status-flagged { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.status-late { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.badge-session-open {
+  background: #10b981;
+  color: #fff;
+  font-size: 0.75rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.65; }
+  100% { opacity: 1; }
+}
+
+.avatar-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--brand-light);
+}
+
+.liveness-box {
+  background: #f1f5f9;
+  border: 2px dashed #94a3b8;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.liveness-active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.step-indicator {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-weight: bold;
+  text-align: center;
+  margin-right: 8px;
+}
+.step-indicator.active {
+  background: var(--brand);
+  color: #fff;
+}
+

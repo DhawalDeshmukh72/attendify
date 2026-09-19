@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Final Year ADS Div-A Timetable{% endblock %}
+{% block content %}
+
+<!-- Header & Controls -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <div>
+    <h3 class="fw-bold text-dark mb-1">
+      <i class="bi bi-calendar3-week-fill text-primary me-2"></i>Class Time Table — Final Year ADS Div-A
+    </h3>
+    <p class="text-muted small mb-0">
+      Academic Year 2025–26 &bull; Class Coordinator: <strong>Pranali K. Shinde (PKS)</strong> &bull; Department of Artificial Intelligence &amp; Data Science
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <button onclick="window.print()" class="btn btn-outline-dark btn-sm fw-bold">
+      <i class="bi bi-printer me-1"></i> Print Timetable
+    </button>
+  </div>
+</div>
+
+<!-- Official College Timetable Matrix -->
+<div class="card p-4 shadow-sm border-0 mb-4 bg-white">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold text-dark mb-0">
+      <span class="badge bg-primary me-2">FINAL YEAR ADS Div-A</span> Weekly Lecture Schedule
+    </h5>
+    <span class="text-muted small">6 Periods Daily (08:10 AM – 02:55 PM)</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle text-center mb-0 small">
+      <thead class="table-dark">
+        <tr>
+          <th style="width: 100px;">Period</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th style="width: 30px; background-color: #334155; font-size: 0.75rem;" class="py-1">LUNCH</th>
+          <th>5</th>
+          <th>6</th>
+        </tr>
+        <tr class="table-secondary text-dark" style="font-size: 0.78rem;">
+          <th>Time</th>
+          <th>08.10 to 09.05</th>
+          <th>09.05 to 10.00</th>
+          <th>10.25 to 11.20</th>
+          <th>11.20 to 12.15</th>
+          <th style="background-color: #cbd5e1; font-size: 0.7rem;">12.15-01.05</th>
+          <th>01.05 to 02.00</th>
+          <th>02.00 to 02.55</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Monday -->
+        <tr>
+          <th class="table-light fw-bold">Mon.</th>
+          <td colspan="2" class="bg-primary-subtle text-primary fw-bold p-2">
+            <div>GENAI&amp;PEL-A1 / DLL-A3 / BFS&amp;I-A2</div>
+            <small class="text-muted fw-normal d-block">Practical Lab Batch Session</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1 d-inline-block">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="GENAI&PEL-A1 / DLL-A3 / BFS&I-A2 (Practical Lab)">
+              <input type="hidden" name="course_code" value="GENAI&PEL">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-2 fw-bold" style="font-size:0.7rem;">🔴 Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">DL</div>
+            <small class="text-muted d-block">Ifat J. Shaikh (IJS)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Deep Learning (DL)">
+              <input type="hidden" name="course_code" value="DL">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">GENAI&amp;PE</div>
+            <small class="text-muted d-block">Pranali K. Shinde (PKS)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Generative AI & Prompt Engineering">
+              <input type="hidden" name="course_code" value="GENAI&PE">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td rowspan="5" class="table-light align-middle text-muted fw-bold" style="writing-mode: vertical-rl; font-size: 0.72rem; letter-spacing: 0.15em;">
+            RECESS / LUNCH
+          </td>
+          <td>
+            <div class="fw-bold">CV / IR</div>
+            <small class="text-muted d-block">Utkarsha Rane / Sayali Moharkar</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Computer Vision / Information Retrieval (Elective)">
+              <input type="hidden" name="course_code" value="CV/IR">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">RM</div>
+            <small class="text-muted d-block">Dr. Sneha A. Khaire (SAK)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Research Methodology (RM)">
+              <input type="hidden" name="course_code" value="RM">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+        </tr>
+
+        <!-- Tuesday -->
+        <tr>
+          <th class="table-light fw-bold">Tues.</th>
+          <td colspan="2" class="bg-primary-subtle text-primary fw-bold p-2">
+            <div>GENAI&amp;PEL-A2 / DLL-A1 / BFS&amp;I-A3</div>
+            <small class="text-muted fw-normal d-block">Practical Lab Batch Session</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1 d-inline-block">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="GENAI&PEL-A2 / DLL-A1 / BFS&I-A3 (Practical Lab)">
+              <input type="hidden" name="course_code" value="GENAI&PEL">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-2 fw-bold" style="font-size:0.7rem;">🔴 Launch</button>
+            </form>
+          </td>
+          <td colspan="2" class="bg-warning-subtle text-dark fw-bold p-2">
+            <div class="text-primary">T&amp;P ACTIVITY</div>
+            <small class="text-dark d-block">Pratibha Kataware (PK)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1 d-inline-block">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Training & Placement (T&P) Activity">
+              <input type="hidden" name="course_code" value="T&P">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-xs btn-outline-warning text-dark py-0 px-2 fw-bold" style="font-size:0.7rem;">🔴 Launch</button>
+            </form>
+          </td>
+          <td class="text-muted">--</td>
+          <td class="text-muted">--</td>
+        </tr>
+
+        <!-- Wednesday -->
+        <tr>
+          <th class="table-light fw-bold">Wed.</th>
+          <td colspan="2" class="bg-primary-subtle text-primary fw-bold p-2">
+            <div>GENAI&amp;PEL-A3 / DLL-A2 / BFS&amp;I-A1</div>
+            <small class="text-muted fw-normal d-block">Practical Lab Batch Session</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1 d-inline-block">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="GENAI&PEL-A3 / DLL-A2 / BFS&I-A1 (Practical Lab)">
+              <input type="hidden" name="course_code" value="GENAI&PEL">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-2 fw-bold" style="font-size:0.7rem;">🔴 Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">CI</div>
+            <small class="text-muted d-block">Kalyani K. Deshmukh (KKD)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Computational Intelligence (CI)">
+              <input type="hidden" name="course_code" value="CI">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">GENAI&amp;PE</div>
+            <small class="text-muted d-block">Pranali K. Shinde (PKS)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Generative AI & Prompt Engineering">
+              <input type="hidden" name="course_code" value="GENAI&PE">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">CV / IR</div>
+            <small class="text-muted d-block">Utkarsha Rane / Sayali Moharkar</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Computer Vision / Information Retrieval (Elective)">
+              <input type="hidden" name="course_code" value="CV/IR">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">DL</div>
+            <small class="text-muted d-block">Ifat J. Shaikh (IJS)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Deep Learning (DL)">
+              <input type="hidden" name="course_code" value="DL">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+        </tr>
+
+        <!-- Thursday -->
+        <tr>
+          <th class="table-light fw-bold">Thur.</th>
+          <td class="text-muted">--</td>
+          <td class="text-muted">--</td>
+          <td>
+            <div class="fw-bold">GENAI&amp;PE</div>
+            <small class="text-muted d-block">Pranali K. Shinde (PKS)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Generative AI & Prompt Engineering">
+              <input type="hidden" name="course_code" value="GENAI&PE">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">DL</div>
+            <small class="text-muted d-block">Ifat J. Shaikh (IJS)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Deep Learning (DL)">
+              <input type="hidden" name="course_code" value="DL">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">CV / IR</div>
+            <small class="text-muted d-block">Utkarsha Rane / Sayali Moharkar</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Computer Vision / Information Retrieval (Elective)">
+              <input type="hidden" name="course_code" value="CV/IR">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">RM</div>
+            <small class="text-muted d-block">Dr. Sneha A. Khaire (SAK)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Research Methodology (RM)">
+              <input type="hidden" name="course_code" value="RM">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+        </tr>
+
+        <!-- Friday -->
+        <tr>
+          <th class="table-light fw-bold">Fri.</th>
+          <td class="text-muted">--</td>
+          <td class="text-muted">--</td>
+          <td>
+            <div class="fw-bold">RM</div>
+            <small class="text-muted d-block">Dr. Sneha A. Khaire (SAK)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Research Methodology (RM)">
+              <input type="hidden" name="course_code" value="RM">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold">CI</div>
+            <small class="text-muted d-block">Kalyani K. Deshmukh (KKD)</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Computational Intelligence (CI)">
+              <input type="hidden" name="course_code" value="CI">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-primary py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td>
+            <div class="fw-bold text-success">MENTOR MEET</div>
+            <small class="text-muted d-block">Faculty Mentor Meeting</small>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Mentor Meeting">
+              <input type="hidden" name="course_code" value="MENTOR">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-xs btn-outline-success py-0 px-1.5" style="font-size:0.68rem;">Launch</button>
+            </form>
+          </td>
+          <td class="text-muted">--</td>
+        </tr>
+
+        <!-- Saturday -->
+        <tr class="table-light">
+          <th class="fw-bold">Sat.</th>
+          <td colspan="7" class="fw-bold py-2 text-uppercase tracking-wider text-dark bg-light border">
+            ⭐ PROJECT WORK (Full Day Guided Laboratory &amp; Development)
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline-block ms-2">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Final Year Major Project Work">
+              <input type="hidden" name="course_code" value="PROJECT">
+              <input type="hidden" name="duration" value="240">
+              <button type="submit" class="btn btn-xs btn-primary py-0 px-2 fw-bold" style="font-size:0.7rem;">🔴 Launch Attendance</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Subjects & Faculty Roster Table (Without Classroom Allotment) -->
+<div class="card p-4 shadow-sm border-0 mb-4 bg-white">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold text-dark mb-0">
+      <i class="bi bi-people-fill text-primary me-2"></i>Subject &amp; Teaching Faculty Directory
+    </h5>
+    <span class="badge bg-light text-dark border">FINAL YEAR ADS Div-A</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th>Subject Code / Description</th>
+          <th>Faculty Name &amp; Initials</th>
+          <th>Type</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong class="text-primary">DL (3)</strong> — Deep Learning</td>
+          <td>Ifat J. Shaikh (IJS)</td>
+          <td><span class="badge bg-primary-subtle text-primary">Theory</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Deep Learning (DL)">
+              <input type="hidden" name="course_code" value="DL">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-sm btn-outline-primary py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-primary">GENAI&amp;PE (3)</strong> — Generative AI &amp; Prompt Engineering</td>
+          <td>Pranali K. Shinde (PKS)</td>
+          <td><span class="badge bg-primary-subtle text-primary">Theory</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="GENAI & Prompt Engineering">
+              <input type="hidden" name="course_code" value="GENAI&PE">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-sm btn-outline-primary py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-primary">ELE-IV: CV (3)</strong> — Computer Vision</td>
+          <td>Utkarsha M. Rane (UMR)</td>
+          <td><span class="badge bg-primary-subtle text-primary">Elective</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Computer Vision (CV)">
+              <input type="hidden" name="course_code" value="CV">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-sm btn-outline-primary py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-primary">ELE-IV: IR (3)</strong> — Information Retrieval</td>
+          <td>Sayali S. Moharkar (SSM)</td>
+          <td><span class="badge bg-primary-subtle text-primary">Elective</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Information Retrieval (IR)">
+              <input type="hidden" name="course_code" value="IR">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-sm btn-outline-primary py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-primary">ELE-V: CI (3)</strong> — Computational Intelligence</td>
+          <td>Kalyani K. Deshmukh (KKD)</td>
+          <td><span class="badge bg-primary-subtle text-primary">Elective</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Computational Intelligence (CI)">
+              <input type="hidden" name="course_code" value="CI">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-sm btn-outline-primary py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-primary">RM (3)</strong> — Research Methodology</td>
+          <td>Dr. Sneha A. Khaire (SAK)</td>
+          <td><span class="badge bg-primary-subtle text-primary">Theory</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Research Methodology (RM)">
+              <input type="hidden" name="course_code" value="RM">
+              <input type="hidden" name="duration" value="55">
+              <button type="submit" class="btn btn-sm btn-outline-primary py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-success">T&amp;P ACTIVITY</strong> — Training &amp; Placement</td>
+          <td>Pratibha Kataware (PK)</td>
+          <td><span class="badge bg-warning text-dark">T&amp;P</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Training & Placement (T&P)">
+              <input type="hidden" name="course_code" value="T&P">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-sm btn-outline-warning text-dark py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-info">DLL (6)</strong> — Deep Learning Lab</td>
+          <td>Ifat J. Shaikh (IJS)</td>
+          <td><span class="badge bg-info-subtle text-info">Practical Lab</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="Deep Learning Lab (DLL)">
+              <input type="hidden" name="course_code" value="DLL">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-sm btn-outline-info py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-info">GENAI&amp;PEL (6)</strong> — GenAI &amp; Prompt Engineering Lab</td>
+          <td>Pranali K. Shinde (PKS)</td>
+          <td><span class="badge bg-info-subtle text-info">Practical Lab</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="GENAI & Prompt Engineering Lab">
+              <input type="hidden" name="course_code" value="GENAI&PEL">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-sm btn-outline-info py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <td><strong class="text-info">BFS&amp;I (6)</strong> — Banking, Financial Services &amp; Insurance</td>
+          <td>Monali A. Sonawane (MAS)</td>
+          <td><span class="badge bg-info-subtle text-info">Practical Lab</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('manage_sessions') }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="title" value="BFS&I Practical Lab">
+              <input type="hidden" name="course_code" value="BFS&I">
+              <input type="hidden" name="duration" value="110">
+              <button type="submit" class="btn btn-sm btn-outline-info py-0.5 px-2">Launch Session</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

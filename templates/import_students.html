@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Bulk Student Enrollment{% endblock %}
+{% block content %}
+
+<div class="row align-items-center justify-content-between mb-4">
+  <div class="col-md-8">
+    <h3 class="fw-bold text-dark mb-1">
+      <i class="bi bi-file-earmark-spreadsheet-fill text-primary me-2"></i>Bulk Student Import
+    </h3>
+    <p class="text-muted small mb-0">Upload a CSV or Excel roster to auto-provision student accounts and generate roll numbers.</p>
+  </div>
+  <div class="col-md-4 text-md-end mt-3 mt-md-0">
+    <a href="{{ url_for('download_import_template') }}" class="btn btn-outline-primary btn-sm fw-bold">
+      <i class="bi bi-download me-1"></i> Download Sample CSV Template
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Upload Card -->
+  <div class="col-lg-6">
+    <div class="card p-4 shadow-sm border-0">
+      <h5 class="fw-bold text-dark mb-3">Upload CSV Roster</h5>
+      
+      <form method="POST" action="{{ url_for('import_students') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Choose CSV File:</label>
+          <input type="file" name="file" accept=".csv" class="form-control" required>
+          <div class="form-text small">Accepted columns: <code>Name, Phone_Number, Birth_Year, Roll_No (optional), MAC_Address (optional)</code></div>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 small mb-3 border">
+          <h6 class="fw-bold text-dark mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Automatic Derivation Rules:</h6>
+          <ul class="mb-0 ps-3 text-muted" style="font-size: 0.8rem;">
+            <li><strong>Roll Numbers:</strong> If blank, automatically generated (e.g. <code>2026CS101</code>).</li>
+            <li><strong>Password:</strong> Derived automatically as <code>Phone Number + Birth Year</code>.</li>
+            <li><strong>Biometrics Status:</strong> Marked as <code>PENDING_BIOMETRICS</code> until facial enrollment.</li>
+          </ul>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold">
+          <i class="bi bi-cloud-arrow-up-fill me-1"></i> Import Students &amp; Provision Accounts
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CSV Format Guidelines & Summary -->
+  <div class="col-lg-6">
+    <div class="card p-4 shadow-sm border-0">
+      <h5 class="fw-bold text-dark mb-3">Roster Format Specification</h5>
+      
+      <div class="table-responsive mb-3">
+        <table class="table table-sm table-bordered small">
+          <thead class="table-light">
+            <tr>
+              <th>Column</th>
+              <th>Required</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Name</code></td>
+              <td><span class="badge bg-success">Yes</span></td>
+              <td>Aarav Sharma</td>
+            </tr>
+            <tr>
+              <td><code>Phone_Number</code></td>
+              <td><span class="badge bg-success">Yes</span></td>
+              <td>9876543210</td>
+            </tr>
+            <tr>
+              <td><code>Birth_Year</code></td>
+              <td><span class="badge bg-success">Yes</span></td>
+              <td>2005</td>
+            </tr>
+            <tr>
+              <td><code>Roll_No</code></td>
+              <td><span class="badge bg-success">Yes (Mandatory)</span></td>
+              <td>2026CS101</td>
+            </tr>
+            <tr>
+              <td><code>MAC_Address</code></td>
+              <td><span class="badge bg-success">Yes (Mandatory)</span></td>
+              <td>AA:BB:CC:11:22:33</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {% if errors %}
+      <div class="alert alert-warning small p-3 mb-0">
+        <h6 class="fw-bold mb-1">Import Warnings &amp; Logs:</h6>
+        <ul class="mb-0 ps-3">
+          {% for err in errors %}
+            <li>{{ err }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

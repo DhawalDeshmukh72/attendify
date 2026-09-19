@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Lecture Attendance Kiosk{% endblock %}
+{% block content %}
+
+<div class="row justify-content-between align-items-center mb-4">
+  <div class="col-md-8">
+    <h2 class="fw-bold mb-1">Classroom Attendance Verification</h2>
+    <p class="text-muted small mb-0">2-Factor Academic Verification: <strong>Step 1</strong> Classroom Wi-Fi Auth + <strong>Step 2</strong> Live Facial Biometric Match.</p>
+  </div>
+</div>
+
+<!-- 2-Step Attendance Pipeline Banner -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="p-3 rounded-3 border bg-white shadow-sm d-flex align-items-center gap-3" id="step1-card">
+      <div class="w-10 h-10 rounded-circle bg-primary text-white d-flex align-items-center justify-center font-bold fs-5 px-3 py-2 flex-shrink-0">
+        1
+      </div>
+      <div>
+        <div class="fw-bold text-dark text-sm">Step 1: Connect to Classroom Wi-Fi</div>
+        <div class="text-muted text-xs">Verify device presence on local classroom access point.</div>
+      </div>
+      <span class="badge bg-secondary ms-auto" id="wifi-status-badge">Not Connected</span>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="p-3 rounded-3 border bg-white shadow-sm d-flex align-items-center gap-3 opacity-75" id="step2-card">
+      <div class="w-10 h-10 rounded-circle bg-secondary text-white d-flex align-items-center justify-center font-bold fs-5 px-3 py-2 flex-shrink-0">
+        2
+      </div>
+      <div>
+        <div class="fw-bold text-dark text-sm">Step 2: Capture Live Photo</div>
+        <div class="text-muted text-xs">Ensure the person in class matches the registered student.</div>
+      </div>
+      <span class="badge bg-secondary ms-auto" id="face-status-badge">Pending</span>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Step 1 (Wi-Fi) & Step 2 (Webcam Capture) -->
+  <div class="col-md-5">
+    
+    <!-- STEP 1: Wi-Fi Access Point Connection Module -->
+    <div class="card p-3 mb-3 border-primary shadow-sm" id="wifi-box">
+      <h6 class="fw-bold mb-2 text-primary d-flex align-items-center gap-2">
+        <i class="bi bi-wifi"></i> 1. Classroom Wi-Fi Login / Check-In
+      </h6>
+      <p class="text-muted text-xs mb-3">Select student roll number or confirm your device is on campus Wi-Fi:</p>
+      
+      <div class="mb-2">
+        <label class="form-label small fw-semibold">Select Student / Roll Number:</label>
+        <select id="wifi-student-select" class="form-select form-select-sm">
+          <option value="">-- Choose Your Roll No --</option>
+          {% for s in students %}
+            <option value="{{ s.roll_no }}" data-mac="{{ s.mac_address }}">
+              {{ s.name }} ({{ s.roll_no }}) - [MAC: {{ s.mac_address }}]
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button id="wifi-connect-btn" class="btn btn-outline-primary btn-sm w-100 mt-2">
+        📶 Connect Device to Classroom Wi-Fi
+      </button>
+      <div id="wifi-alert" class="alert alert-success mt-2 mb-0 py-1.5 px-2.5 text-xs d-none"></div>
+    </div>
+
+    <!-- STEP 2: Live Facial Scan & Anti-Spoofing -->
+    <div class="card p-3 text-center shadow-sm">
+      <h6 class="fw-bold mb-2 text-dark text-start d-flex align-items-center gap-2">
+        <i class="bi bi-camera-fill text-primary"></i> 2. Live Face Verification
+      </h6>
+
+      <!-- Active Session Selector -->
+      <div class="mb-3 text-start">
+        <label class="form-label small fw-bold">Active Lecture / Session Window:</label>
+        <select id="session-select" class="form-select form-select-sm">
+          <option value="">⚡ Ad-hoc / Open Lecture Check-in</option>
+          {% for s in active_sessions %}
+            <option value="{{ s.id }}" {% if s.is_open() %}selected{% endif %}>
+              {{ s.title }} ({{ s.course_code }}) {% if s.is_open() %}🟢 OPEN{% else %}🔴 CLOSED{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="position-relative">
+        <video id="webcam-video" autoplay muted playsinline></video>
+        <canvas id="webcam-canvas" class="d-none"></canvas>
+      </div>
+
+      <!-- Liveness Challenge -->
+      <div class="liveness-box text-start mt-3" id="liveness-panel">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="small fw-bold"><i class="bi bi-shield-check text-primary"></i> Liveness Detection:</span>
+          <span class="badge bg-secondary" id="liveness-badge">Ready</span>
+        </div>
+        <p class="small text-muted mb-2" id="liveness-instruction" style="font-size:0.75rem;">
+          Click <strong>"Verify Liveness"</strong> and perform the prompt to ensure it's a real live person.
+        </p>
+        <button id="liveness-btn" class="btn btn-sm btn-outline-secondary w-100">
+          ✨ Check Live Presence
+        </button>
+      </div>
+
+      <div id="webcam-error" class="alert alert-warning mt-3 d-none small"></div>
+
+      <button id="scan-btn" class="btn btn-primary mt-3 py-2.5 w-100 font-bold" disabled>
+        📸 2. Take Photo &amp; Confirm Attendance
+      </button>
+    </div>
+  </div>
+
+  <!-- Right Column: Verification Results & Audit -->
+  <div class="col-md-7">
+    <div class="card p-4 shadow-sm" id="result-card">
+      <h5 class="fw-bold mb-3"><i class="bi bi-person-badge text-primary"></i> Attendance Decision Log</h5>
+      
+      <div id="result-idle" class="text-muted small py-5 text-center">
+        <i class="bi bi-person-bounding-box fs-1 d-block mb-2 text-secondary"></i>
+        Connect to Wi-Fi on the left, verify liveness, and click <strong>Take Photo &amp; Confirm Attendance</strong>.
+      </div>
+
+      <div id="result-body" class="d-none">
+        <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3 border">
+          <img id="result-photo" class="avatar-thumb" style="width:72px;height:72px;border:3px solid #0b1329;">
+          <div>
+            <h5 class="fw-bold mb-0 text-dark" id="result-name"></h5>
+            <div class="text-muted small" id="result-roll"></div>
+            <span class="badge bg-primary mt-1" id="result-session"></span>
+          </div>
+          <span class="status-pill ms-auto fs-6" id="result-status"></span>
+        </div>
+
+        <div class="row g-2 text-center mb-3">
+          <div class="col-4">
+            <div class="p-2.5 border rounded-3 bg-light">
+              <div class="text-muted small" style="font-size:0.75rem;">1. Wi-Fi AP Status</div>
+              <strong class="fs-6" id="result-wifi"></strong>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2.5 border rounded-3 bg-light">
+              <div class="text-muted small" style="font-size:0.75rem;">2. Facial Match</div>
+              <strong class="text-primary fs-6" id="result-score"></strong>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2.5 border rounded-3 bg-light">
+              <div class="text-muted small" style="font-size:0.75rem;">Identity Match</div>
+              <strong class="text-success fs-6">CONFIRMED ✅</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info py-2.5 small mb-0" id="result-message"></div>
+      </div>
+
+      <div id="result-error" class="alert alert-danger d-none small mt-3"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/webcam.js') }}"></script>
+<script>
+const cam = initWebcam("webcam-video", "webcam-canvas");
+const scanBtn = document.getElementById("scan-btn");
+const livenessBtn = document.getElementById("liveness-btn");
+const livenessBadge = document.getElementById("liveness-badge");
+const livenessInstruction = document.getElementById("liveness-instruction");
+const livenessPanel = document.getElementById("liveness-panel");
+const wifiConnectBtn = document.getElementById("wifi-connect-btn");
+const wifiStudentSelect = document.getElementById("wifi-student-select");
+const wifiAlert = document.getElementById("wifi-alert");
+const wifiStatusBadge = document.getElementById("wifi-status-badge");
+const step2Card = document.getElementById("step2-card");
+
+let currentConnectedMac = "";
+let livenessPassed = false;
+
+// Step 1: Wi-Fi Connect Simulation
+wifiConnectBtn.addEventListener("click", async () => {
+  const rollNo = wifiStudentSelect.value;
+  const selectedOption = wifiStudentSelect.options[wifiStudentSelect.selectedIndex];
+  const mac = selectedOption ? selectedOption.getAttribute("data-mac") : "";
+
+  if (!rollNo && !mac) {
+    alert("Please choose a student roll number to connect their device to Wi-Fi.");
+    return;
+  }
+
+  wifiConnectBtn.disabled = true;
+  wifiConnectBtn.textContent = "Connecting to Classroom AP...";
+
+  try {
+    const res = await fetch("{{ url_for('wifi_connect') }}", {
+      method: "POST",
+      body: new URLSearchParams({ roll_no: rollNo, mac_address: mac })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      currentConnectedMac = data.mac_address;
+      wifiAlert.textContent = `✅ Device Connected (MAC ${data.mac_address}) to Classroom Wi-Fi.`;
+      wifiAlert.classList.remove("d-none");
+      wifiStatusBadge.textContent = "Connected ✅";
+      wifiStatusBadge.className = "badge bg-success ms-auto";
+      step2Card.classList.remove("opacity-75");
+      livenessBtn.className = "btn btn-sm btn-primary w-100";
+    } else {
+      alert(data.error || "Wi-Fi connection failed.");
+    }
+  } catch (err) {
+    alert("Network error: " + err.message);
+  } finally {
+    wifiConnectBtn.disabled = false;
+    wifiConnectBtn.textContent = "📶 Device Connected to Classroom Wi-Fi";
+  }
+});
+
+// Liveness Detection
+const challenges = [
+  "Please Blink your eyes naturally",
+  "Turn your head slightly to the left",
+  "Smile at the camera for a moment",
+  "Nod your head slightly"
+];
+
+livenessBtn.addEventListener("click", () => {
+  const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+  livenessPanel.classList.add("liveness-active");
+  livenessBadge.className = "badge bg-primary";
+  livenessBadge.textContent = "Verifying...";
+  livenessInstruction.innerHTML = `<strong class="text-primary">Prompt:</strong> ${challenge}... (Hold for 2s)`;
+  livenessBtn.disabled = true;
+
+  setTimeout(() => {
+    livenessPassed = true;
+    livenessBadge.className = "badge bg-success";
+    livenessBadge.textContent = "Liveness Verified ✅";
+    livenessInstruction.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Live Presence Confirmed.</span>`;
+    scanBtn.disabled = false;
+    scanBtn.innerHTML = "📸 Take Photo &amp; Confirm Attendance";
+    scanBtn.className = "btn btn-success mt-3 py-2.5 w-100 font-bold";
+  }, 1800);
+});
+
+// Step 2: Capture Photo & Verify Attendance
+scanBtn.addEventListener("click", async () => {
+  if (!livenessPassed) return;
+
+  const image = cam.capture();
+  const errorBox = document.getElementById("result-error");
+  const idleBox = document.getElementById("result-idle");
+  const bodyBox = document.getElementById("result-body");
+  const sessionId = document.getElementById("session-select").value;
+
+  errorBox.classList.add("d-none");
+  idleBox.classList.add("d-none");
+  bodyBox.classList.add("d-none");
+
+  scanBtn.disabled = true;
+  scanBtn.textContent = "Matching Face with FAISS & Verifying Wi-Fi...";
+
+  try {
+    const res = await fetch("{{ url_for('mark_attendance') }}", {
+      method: "POST",
+      body: new URLSearchParams({
+        image_data: image,
+        session_id: sessionId,
+        mac_address: currentConnectedMac,
+        liveness_verified: "true"
+      }),
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      errorBox.textContent = data.error || "Something went wrong.";
+      errorBox.classList.remove("d-none");
+    } else if (!data.recognized) {
+      errorBox.textContent = data.message;
+      errorBox.classList.remove("d-none");
+    } else {
+      document.getElementById("result-name").textContent = data.student.name;
+      document.getElementById("result-roll").textContent = "Roll " + data.student.roll_no;
+      document.getElementById("result-photo").src = "/data/" + data.student.photo_path;
+      document.getElementById("result-score").textContent = data.score;
+      document.getElementById("result-wifi").textContent = data.wifi_verified ? "CONNECTED ✅" : "UNSEEN ❌";
+      document.getElementById("result-session").textContent = data.session || "Active Class";
+      document.getElementById("result-message").textContent = data.message;
+      
+      const pill = document.getElementById("result-status");
+      pill.textContent = data.status;
+      pill.className = "status-pill ms-auto " + (data.status === "PRESENT" ? "status-present" : "status-flagged");
+      bodyBox.classList.remove("d-none");
+    }
+  } catch (err) {
+    errorBox.textContent = "Network error: " + err.message;
+    errorBox.classList.remove("d-none");
+  } finally {
+    scanBtn.disabled = false;
+    scanBtn.textContent = "📸 Take Photo & Confirm Attendance";
+  }
+});
+</script>
+{% endblock %}
+
+

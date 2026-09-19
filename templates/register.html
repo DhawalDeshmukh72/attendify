@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Register Student{% endblock %}
+{% block content %}
+
+<div class="row justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Student Registration &amp; Face Enrollment</h2>
+    <p class="text-muted small mb-0">Multi-Angle Reference Captures (Center, Left, Right) for High Accuracy Vector Embeddings</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Multi-Angle Camera Studio -->
+  <div class="col-md-5">
+    <div class="card p-3 text-center">
+      <div class="d-flex justify-content-around mb-2">
+        <span class="step-indicator" id="step-ind-1">1</span>
+        <span class="step-indicator" id="step-ind-2">2</span>
+        <span class="step-indicator" id="step-ind-3">3</span>
+      </div>
+      <div class="small fw-bold text-primary mb-2" id="angle-instruction">Angle 1: Look Straight at Camera</div>
+
+      <video id="webcam-video" autoplay muted playsinline></video>
+      <canvas id="webcam-canvas" class="d-none"></canvas>
+
+      <!-- Thumbnails gallery -->
+      <div class="row g-2 mt-2" id="thumbs-row">
+        <div class="col-4">
+          <div class="border rounded p-1 text-center bg-light">
+            <small class="text-muted d-block mb-1" style="font-size:0.7rem;">Center</small>
+            <img id="thumb-1" class="img-fluid rounded d-none" style="height:60px;object-fit:cover;">
+            <div id="ph-1" class="text-muted small py-3"><i class="bi bi-camera"></i></div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="border rounded p-1 text-center bg-light">
+            <small class="text-muted d-block mb-1" style="font-size:0.7rem;">Left Angle</small>
+            <img id="thumb-2" class="img-fluid rounded d-none" style="height:60px;object-fit:cover;">
+            <div id="ph-2" class="text-muted small py-3"><i class="bi bi-camera"></i></div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="border rounded p-1 text-center bg-light">
+            <small class="text-muted d-block mb-1" style="font-size:0.7rem;">Right Angle</small>
+            <img id="thumb-3" class="img-fluid rounded d-none" style="height:60px;object-fit:cover;">
+            <div id="ph-3" class="text-muted small py-3"><i class="bi bi-camera"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="webcam-error" class="alert alert-warning mt-3 d-none small"></div>
+      
+      <div class="mt-3 d-flex gap-2 justify-content-center">
+        <button id="capture-step-btn" class="btn btn-primary w-100">📷 Capture Angle #1</button>
+        <button id="reset-captures-btn" class="btn btn-outline-secondary d-none">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registration Details Form -->
+  <div class="col-md-7">
+    <div class="card p-4">
+      <form id="register-form">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="name" placeholder="e.g. Jane Doe" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Roll Number 
+              <span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size:0.65rem;">Auto-Generated</span>
+            </label>
+            <input type="text" class="form-control font-monospace bg-light fw-bold text-primary" name="roll_no" value="{{ next_roll }}" placeholder="{{ next_roll }}">
+            <div class="form-text small" style="font-size:0.75rem;">System assigned unique academic ID (editable if needed).</div>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Mobile Phone Number <span class="text-danger">*</span></label>
+            <input type="tel" class="form-control" name="phone_number" id="phone_input" placeholder="e.g. 9876543210" required>
+            <div class="form-text small" style="font-size:0.75rem;">Used as 1st part of login password.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Birth Year (YYYY) <span class="text-danger">*</span></label>
+            <input type="number" min="1950" max="2030" class="form-control" name="birth_year" id="year_input" placeholder="e.g. 2004" required>
+            <div class="form-text small" style="font-size:0.75rem;">Used as 2nd part of login password.</div>
+          </div>
+        </div>
+
+        <div class="mt-3 p-3 bg-light rounded border">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="small fw-bold text-dark"><i class="bi bi-key-fill text-warning"></i> Auto-Generated Student Password:</span>
+            <span class="badge bg-dark font-monospace" id="pwd_preview">Phone + Birth Year</span>
+          </div>
+          <div class="small text-muted mt-1" style="font-size:0.75rem;">
+            Format: <code class="text-primary">&lt;PhoneNumber&gt;&lt;BirthYear&gt;</code> (e.g. <code>98765432102004</code>)
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="form-label fw-semibold">Registered Device MAC Address</label>
+          <input type="text" class="form-control" name="mac_address" placeholder="AA:BB:CC:DD:EE:FF (Optional: Mock generated)">
+          <div class="form-text small" style="font-size:0.75rem;">Used for secondary Wi-Fi classroom presence verification.</div>
+        </div>
+
+        <div id="form-error" class="alert alert-danger d-none small mt-3"></div>
+        <div id="form-success" class="alert alert-success d-none small mt-3"></div>
+        
+        <button type="submit" class="btn btn-primary w-100 py-2 fs-6 mt-3" id="submit-btn" disabled>
+          💾 Complete 3 Angle Captures First
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/webcam.js') }}"></script>
+<script>
+const cam = initWebcam("webcam-video", "webcam-canvas");
+const capturedImages = [];
+let currentStep = 1;
+
+const anglePrompts = [
+  "Angle 1: Look straight directly at the camera",
+  "Angle 2: Turn your head slightly to the LEFT",
+  "Angle 3: Turn your head slightly to the RIGHT or SMILE"
+];
+
+const captureBtn = document.getElementById("capture-step-btn");
+const resetBtn = document.getElementById("reset-captures-btn");
+const submitBtn = document.getElementById("submit-btn");
+const instruction = document.getElementById("angle-instruction");
+
+function updateIndicators() {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById(`step-ind-${i}`);
+    if (i < currentStep) {
+      el.className = "step-indicator bg-success text-white";
+      el.innerHTML = "✓";
+    } else if (i === currentStep) {
+      el.className = "step-indicator active";
+      el.innerHTML = i;
+    } else {
+      el.className = "step-indicator";
+      el.innerHTML = i;
+    }
+  }
+}
+
+updateIndicators();
+
+captureBtn.addEventListener("click", () => {
+  const img = cam.capture();
+  capturedImages.push(img);
+
+  // Show thumbnail
+  const thumb = document.getElementById(`thumb-${currentStep}`);
+  const ph = document.getElementById(`ph-${currentStep}`);
+  thumb.src = img;
+  thumb.classList.remove("d-none");
+  ph.classList.add("d-none");
+
+  currentStep++;
+  resetBtn.classList.remove("d-none");
+
+  if (currentStep <= 3) {
+    instruction.textContent = anglePrompts[currentStep - 1];
+    captureBtn.textContent = `📷 Capture Angle #${currentStep}`;
+    updateIndicators();
+  } else {
+    instruction.innerHTML = `<span class="text-success fw-bold">All 3 Angles Captured! Ready to save.</span>`;
+    captureBtn.classList.add("d-none");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "🚀 Enroll Student & Index Vectors";
+    updateIndicators();
+  }
+});
+
+resetBtn.addEventListener("click", () => {
+  capturedImages.length = 0;
+  currentStep = 1;
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`thumb-${i}`).classList.add("d-none");
+    document.getElementById(`ph-${i}`).classList.remove("d-none");
+  }
+  captureBtn.classList.remove("d-none");
+  captureBtn.textContent = "📷 Capture Angle #1";
+  resetBtn.classList.add("d-none");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "💾 Complete 3 Angle Captures First";
+  instruction.textContent = anglePrompts[0];
+  updateIndicators();
+});
+
+// Live password preview updater
+const phoneInput = document.getElementById("phone_input");
+const yearInput = document.getElementById("year_input");
+const pwdPreview = document.getElementById("pwd_preview");
+
+function updatePasswordPreview() {
+  const p = phoneInput.value.replace(/\D/g, "");
+  const y = yearInput.value.replace(/\D/g, "");
+  if (p || y) {
+    pwdPreview.textContent = (p || "Phone") + (y || "YYYY");
+    pwdPreview.className = "badge bg-primary font-monospace";
+  } else {
+    pwdPreview.textContent = "Phone + Birth Year";
+    pwdPreview.className = "badge bg-dark font-monospace";
+  }
+}
+
+if (phoneInput && yearInput) {
+  phoneInput.addEventListener("input", updatePasswordPreview);
+  yearInput.addEventListener("input", updatePasswordPreview);
+}
+
+document.getElementById("register-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errorBox = document.getElementById("form-error");
+  const successBox = document.getElementById("form-success");
+  errorBox.classList.add("d-none");
+  successBox.classList.add("d-none");
+
+  if (capturedImages.length < 1) {
+    errorBox.textContent = "Please complete all 3 face captures before registering.";
+    errorBox.classList.remove("d-none");
+    return;
+  }
+
+  const form = e.target;
+  const formData = new URLSearchParams();
+  formData.append("name", form.name.value);
+  formData.append("roll_no", form.roll_no.value);
+  formData.append("phone_number", form.phone_number.value);
+  formData.append("birth_year", form.birth_year.value);
+  formData.append("mac_address", form.mac_address.value);
+  formData.append("create_account", "true");
+
+  capturedImages.forEach((img) => {
+    formData.append("images[]", img);
+  });
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Extracting Facenet512 Embeddings & FAISS Indexing...";
+
+  try {
+    const res = await fetch("{{ url_for('register') }}", { method: "POST", body: formData });
+    const data = await res.json();
+    if (data.ok) {
+      successBox.innerHTML = `
+        <div class="mb-2"><strong>🎉 Student Successfully Enrolled!</strong></div>
+        <ul class="mb-0 ps-3">
+          <li><strong>Name:</strong> ${data.student.name}</li>
+          <li><strong>Assigned Roll No:</strong> <code>${data.student.roll_no}</code></li>
+          <li><strong>Derived Login Password:</strong> <code>${data.account_info.password}</code> <em>(Phone + Birth Year)</em></li>
+          <li><strong>Embeddings:</strong> ${data.student.embedding_count} vectors indexed in FAISS</li>
+        </ul>
+      `;
+      successBox.classList.remove("d-none");
+      form.reset();
+      updatePasswordPreview();
+      resetBtn.click();
+    } else {
+      errorBox.textContent = data.error || "Registration failed.";
+      errorBox.classList.remove("d-none");
+    }
+  } catch (err) {
+    errorBox.textContent = "Network error: " + err.message;
+    errorBox.classList.remove("d-none");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "🚀 Enroll Student & Index Vectors";
+  }
+});
+</script>
+{% endblock %}
+
+

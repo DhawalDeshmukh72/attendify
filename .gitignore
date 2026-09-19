@@ -1,0 +1,33 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Database & generated runtime data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/*.index
+data/*.pkl
+data/student_photos/*.jpg
+data/student_photos/*.png
+data/student_photos/*.jpeg
+!data/student_photos/.gitkeep
+
+# IDE & OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local

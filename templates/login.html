@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<title>Attendify — Academic Login</title>
+<!-- Google Fonts: Plus Jakarta Sans / Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "oxford-navy": "#0b1329",
+            "oxford-light": "#152347",
+            "academic-gold": "#d97706",
+          },
+          fontFamily: {
+            "sans": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .tab-active {
+      background: #0b1329;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(11, 19, 41, 0.2);
+    }
+</style>
+</head>
+<body class="bg-[#f8fafc] text-[#1e293b] font-sans min-h-screen flex flex-col justify-between selection:bg-oxford-navy selection:text-white antialiased">
+
+<!-- Header Bar -->
+<header class="w-full bg-oxford-navy text-white border-b-2 border-academic-gold shadow-sm">
+  <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <span class="text-2xl">📸</span>
+      <span class="text-lg font-bold tracking-wide text-white">Attendify <span class="text-xs px-1.5 py-0.5 rounded bg-amber-400 text-oxford-navy font-extrabold">PRO</span></span>
+    </div>
+  </div>
+</header>
+
+<!-- Centered Login Box -->
+<main class="max-w-md mx-auto px-4 py-12 flex-1 flex items-center justify-center w-full">
+  <div class="w-full bg-white rounded-2xl border border-slate-200 shadow-lg p-7 sm:p-9 relative overflow-hidden">
+    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-oxford-navy via-academic-gold to-oxford-navy"></div>
+
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-oxford-navy">
+        Sign In
+      </h2>
+      <p class="text-xs text-slate-500 mt-1">
+        Select your account type to continue
+      </p>
+    </div>
+
+    <!-- Role Tabs -->
+    <div class="grid grid-cols-2 p-1 rounded-xl bg-slate-100 border border-slate-200 mb-6 gap-1">
+      <button type="button" id="tab-student" onclick="switchRole('student')" class="py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all tab-active">
+        <span class="material-symbols-outlined text-sm">school</span>
+        <span>Student Portal</span>
+      </button>
+      <button type="button" id="tab-faculty" onclick="switchRole('faculty')" class="py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all text-slate-600 hover:text-oxford-navy">
+        <span class="material-symbols-outlined text-sm">badge</span>
+        <span>Faculty / Admin</span>
+      </button>
+    </div>
+
+    <!-- Flashed Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 p-3 rounded-lg {% if category == 'danger' %}bg-red-50 border border-red-200 text-red-700{% elif category == 'warning' %}bg-amber-50 border border-amber-200 text-amber-800{% else %}bg-emerald-50 border border-emerald-200 text-emerald-800{% endif %} text-xs flex items-center gap-2">
+            <span class="material-symbols-outlined text-base">{% if category == 'danger' %}error{% elif category == 'warning' %}warning{% else %}check_circle{% endif %}</span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Login Form -->
+    <form method="POST" action="{{ url_for('login') }}" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="role" id="login-role" value="{{ active_role or 'student' }}">
+      
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1" id="label-username" for="username">
+          Student Roll Number
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <span class="material-symbols-outlined text-lg" id="icon-username">school</span>
+          </div>
+          <input type="text" name="username" id="username" value="{{ prefill_username or '' }}" class="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-oxford-navy focus:border-oxford-navy" placeholder="e.g. 2026CS001" required autofocus>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1" for="password">
+          Password
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <span class="material-symbols-outlined text-lg">lock</span>
+          </div>
+          <input type="password" name="password" id="password" class="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-oxford-navy focus:border-oxford-navy font-mono" placeholder="••••••••" required>
+          <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700" onclick="togglePassword()">
+            <span class="material-symbols-outlined text-lg" id="pass-eye">visibility</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" id="submit-btn" class="w-full py-3 px-4 rounded-lg bg-oxford-navy hover:bg-oxford-light text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2 border-b-2 border-academic-gold">
+          <span id="btn-text">Sign In to Student Portal</span>
+          <span class="material-symbols-outlined text-base">arrow_forward</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer class="w-full text-center text-xs text-slate-400 py-4 border-t border-slate-200 bg-white">
+  <div class="max-w-4xl mx-auto px-4">
+    <p class="text-[11px] text-slate-400">Attendify Enterprise Attendance Verification System</p>
+  </div>
+</footer>
+
+<script>
+let currentRole = "{{ active_role or 'student' }}";
+
+function switchRole(role) {
+  currentRole = role;
+  const loginRoleInput = document.getElementById('login-role');
+  if (loginRoleInput) loginRoleInput.value = role;
+
+  const tabStudent = document.getElementById('tab-student');
+  const tabFaculty = document.getElementById('tab-faculty');
+  const labelUsername = document.getElementById('label-username');
+  const inputUsername = document.getElementById('username');
+  const btnText = document.getElementById('btn-text');
+  const iconUsername = document.getElementById('icon-username');
+
+  if (role === 'student') {
+    tabStudent.className = 'py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all tab-active';
+    tabFaculty.className = 'py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all text-slate-600 hover:text-oxford-navy';
+    labelUsername.textContent = 'Student Roll Number';
+    inputUsername.placeholder = 'e.g. 2026CS001';
+    btnText.textContent = 'Sign In to Student Portal';
+    iconUsername.textContent = 'school';
+  } else {
+    tabFaculty.className = 'py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all tab-active';
+    tabStudent.className = 'py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all text-slate-600 hover:text-oxford-navy';
+    labelUsername.textContent = 'Faculty Username';
+    inputUsername.placeholder = 'e.g. teacher or admin';
+    btnText.textContent = 'Sign In to Faculty Portal';
+    iconUsername.textContent = 'badge';
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  switchRole("{{ active_role or 'student' }}");
+});
+
+function togglePassword() {
+  const input = document.getElementById("password");
+  const icon = document.getElementById("pass-eye");
+  if (input.type === "password") {
+    input.type = "text";
+    icon.textContent = "visibility_off";
+  } else {
+    input.type = "password";
+    icon.textContent = "visibility";
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Attendify — Students Directory{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-0">Enrolled Students Directory</h2>
+    <p class="text-muted small mb-0">Roster of registered students, vector embedding counts, and login credentials.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('register') }}">＋ Enroll New Student</a>
+</div>
+
+<div class="card p-3">
+  {% if students %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th></th>
+          <th>Student Name</th>
+          <th>Roll Number</th>
+          <th>Phone Number</th>
+          <th>Birth Year</th>
+          <th>MAC Address</th>
+          <th>Registered</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td><img src="/data/{{ s.photo_path }}" class="avatar-thumb" style="width:40px;height:40px;"></td>
+          <td><strong>{{ s.name }}</strong></td>
+          <td><code class="text-primary fw-bold">{{ s.roll_no }}</code></td>
+          <td class="small">{{ s.phone_number }}</td>
+          <td class="small">{{ s.birth_year }}</td>
+          <td class="text-muted small font-monospace">{{ s.mac_address }}</td>
+          <td class="text-muted small">{{ s.created_at }}</td>
+          <td>
+            <form method="post" action="{{ url_for('delete_student', student_id=s.id) }}" onsubmit="return confirm('Remove {{ s.name }} ({{ s.roll_no }})?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted small text-center py-4 mb-0">No students registered yet. Click "Enroll New Student" to add.</p>
+  {% endif %}
+</div>
+
+{% endblock %}
+
