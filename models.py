@@ -136,6 +136,7 @@ class Student(db.Model):
     birth_year = db.Column(db.String(4), nullable=True)
     mac_address = db.Column(db.String(17), unique=True, nullable=False)
     photo_path = db.Column(db.String(255), nullable=False, default="student_photos/default.png")
+    photo_base64 = db.Column(db.Text, nullable=True)
     enrollment_status = db.Column(db.String(30), default="ACTIVE")  # ACTIVE, PENDING_BIOMETRICS
 
     # Face embedding vectors, stored as JSON list of lists [[512-d], ...]

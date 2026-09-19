@@ -111,6 +111,14 @@ def rebuild_vector_index():
 with app.app_context():
     db.create_all()
 
+    # Safe dynamic column migration
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text("ALTER TABLE students ADD COLUMN photo_base64 TEXT"))
+            conn.commit()
+    except Exception:
+        pass
+
     # Seed default admin / teacher account if none exists
     if not User.query.filter_by(username="admin").first():
         admin = User(username="admin", role="admin")
@@ -346,6 +354,11 @@ def register():
     from PIL import Image
     Image.fromarray(decoded_images[0]).save(photo_path)
 
+    # Extract clean base64 data for persistent database storage
+    primary_b64 = images_raw[0]
+    if "," in primary_b64:
+        primary_b64 = primary_b64.split(",", 1)[1]
+
     student = Student(
         name=name,
         roll_no=roll_no,
@@ -353,6 +366,7 @@ def register():
         birth_year=birth_year,
         mac_address=mac_address,
         photo_path=f"student_photos/{photo_filename}",
+        photo_base64=primary_b64,
     )
     student.set_embeddings(embeddings)
     db.session.add(student)
@@ -1272,7 +1286,26 @@ def download_pdf_report():
 
 @app.route("/data/student_photos/<path:filename>")
 def student_photo(filename):
-    return send_from_directory(PHOTO_DIR, filename)
+    file_path = os.path.join(PHOTO_DIR, filename)
+    if os.path.exists(file_path):
+        return send_from_directory(PHOTO_DIR, filename)
+    
+    # Attempt to load from database if file is missing (e.g. after container restart)
+    student = Student.query.filter(Student.photo_path.like(f"%{filename}")).first()
+    if student and student.photo_base64:
+        try:
+            raw_data = base64.b64decode(student.photo_base64)
+            return Response(raw_data, mimetype="image/jpeg")
+        except Exception:
+            pass
+
+    # Clean default SVG avatar fallback
+    svg_avatar = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+        <circle cx="50" cy="50" r="50" fill="#4f46e5"/>
+        <circle cx="50" cy="38" r="18" fill="#ffffff"/>
+        <path d="M20 85 C20 62, 80 62, 80 85 Z" fill="#ffffff"/>
+    </svg>'''
+    return Response(svg_avatar, mimetype="image/svg+xml")
 
 
 if __name__ == "__main__":
