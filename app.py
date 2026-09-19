@@ -141,6 +141,50 @@ with app.app_context():
     if not SystemSetting.get_setting("match_threshold"):
         SystemSetting.set_setting("match_threshold", "0.68")
 
+    # Seed default student & user account if none exists
+    if Student.query.count() == 0:
+        default_student = Student(
+            roll_no="1432231043",
+            name="Dhawal Nisarg Deshmukh",
+            birth_year=2003,
+            phone_number="8767454366",
+            mac_address="00:1B:44:11:3A:B7",
+            photo_path="student_photos/default.png"
+        )
+        db.session.add(default_student)
+        db.session.flush()
+
+        # Seed student login account
+        if not User.query.filter_by(username="1432231043").first():
+            student_user = User(username="1432231043", role="student")
+            student_user.set_password("student123")
+            db.session.add(student_user)
+
+        # Seed an active session for immediate testing
+        if AttendanceSession.query.count() == 0:
+            active_course = Course.query.first()
+            if active_course:
+                sample_session = AttendanceSession(
+                    title="GenAI & Prompt Engineering - Lecture 01",
+                    course_id=active_course.id,
+                    status="OPEN",
+                    created_by=1
+                )
+                db.session.add(sample_session)
+                db.session.flush()
+
+                # Add sample attendance log
+                sample_log = AttendanceLog(
+                    student_id=default_student.id,
+                    session_id=sample_session.id,
+                    status="PRESENT",
+                    face_match_score=0.92,
+                    wifi_verified=True,
+                    liveness_verified=True,
+                    verified_mac="00:1B:44:11:3A:B7"
+                )
+                db.session.add(sample_log)
+
     db.session.commit()
     rebuild_vector_index()
 
