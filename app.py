@@ -199,10 +199,6 @@ with app.app_context():
     db.session.commit()
     rebuild_vector_index()
 
-# Pre-warm deepface model weights in background thread
-import threading
-threading.Thread(target=face_utils.warmup_model, daemon=True).start()
-
 
 # --------------------------------------------------------------------
 # Authentication Routes
