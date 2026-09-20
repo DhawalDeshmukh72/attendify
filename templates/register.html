@@ -250,7 +250,12 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
 
   try {
     const res = await fetch("{{ url_for('register') }}", { method: "POST", body: formData });
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = { ok: false, error: res.status >= 500 ? "Server is currently busy processing other biometric tasks. Please retry in a few seconds." : `Server returned error (${res.status}).` };
+    }
     if (data.ok) {
       successBox.innerHTML = `
         <div class="mb-2"><strong>🎉 Student Successfully Enrolled!</strong></div>

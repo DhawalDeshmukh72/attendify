@@ -12,12 +12,20 @@ services:
     plan: free
     region: oregon
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 180"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --worker-class gthread --worker-connections 1000 --max-requests 200 --max-requests-jitter 20 --timeout 180 --keep-alive 5"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: FLASK_ENV
         value: production
+      - key: TF_CPP_MIN_LOG_LEVEL
+        value: "3"
+      - key: TF_ENABLE_ONEDNN_OPTS
+        value: "0"
+      - key: OMP_NUM_THREADS
+        value: "2"
+      - key: OPENBLAS_NUM_THREADS
+        value: "2"
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL

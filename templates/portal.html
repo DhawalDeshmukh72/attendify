@@ -395,7 +395,12 @@ if (wifiConnectBtn) {
         method: "POST",
         body: new URLSearchParams({ mac_address: studentMac, roll_no: studentRoll })
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = { ok: false, error: res.status >= 500 ? "Server is busy processing. Please retry in a few seconds." : `Request failed (${res.status}).` };
+      }
       if (data.ok) {
         isWifiConnected = true;
         wifiAlert.classList.remove("d-none");
@@ -472,7 +477,12 @@ if (checkinBtn) {
         method: "POST",
         body: form
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = { ok: false, error: res.status >= 500 ? "AI Server is processing multiple requests. Please retry in a few seconds." : `Server returned status ${res.status}.` };
+      }
 
       resultContainer.classList.remove("d-none");
 
