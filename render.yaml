@@ -11,7 +11,7 @@ services:
     env: python
     plan: free
     region: oregon
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && python -c 'import os; os.environ[\"CUDA_VISIBLE_DEVICES\"]=\"-1\"; from deepface import DeepFace; DeepFace.build_model(\"Facenet512\")'"
     startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --worker-class gthread --worker-connections 1000 --max-requests 200 --max-requests-jitter 20 --timeout 180 --keep-alive 5"
     envVars:
       - key: PYTHON_VERSION

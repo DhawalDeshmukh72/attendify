@@ -1298,6 +1298,14 @@ def student_photo(filename):
     return Response(svg_avatar, mimetype="image/svg+xml")
 
 
+@app.route("/favicon.ico")
+def favicon():
+    svg_icon = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <text y="0.9em" font-size="90">📸</text>
+    </svg>'''
+    return Response(svg_icon, mimetype="image/svg+xml")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(debug=True, host="0.0.0.0", port=port)
